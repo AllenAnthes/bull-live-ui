@@ -1,0 +1,25 @@
+{
+  "name": "@allenanthes/bull-live-ui",
+  "version": "0.0.1",
+  "private": false,
+  "main": "server/index.js",
+  "scripts": {
+    "prepublishOnly": "cp -r ./app/build/* ./server/public",
+    "dev": "DEBUG=true nodemon ./server/.dev/devServer.js"
+  },
+  "dependencies": {
+    "bull": "^3.13.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "lodash": "^4.17.15",
+    "morgan": "~1.9.1",
+    "redis-info": "^3.0.7",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.3",
+    "prettier": "^2.0.5"
+  }
+}
