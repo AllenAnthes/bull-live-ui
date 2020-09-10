@@ -7,7 +7,7 @@ const Queue = require('bull');
 
 const { bullUI, setQueues, useBullUIWebsockets } = require('../index');
 
-const { REDIS_HOST = '127.0.0.1', REDIS_PORT = 6379, REDIS_DB = 0, PORT = '3000' } = process.env;
+const { REDIS_HOST = '127.0.0.1', REDIS_PORT = 6379, REDIS_DB = 0, PORT = '9090' } = process.env;
 
 const redis = {
   host: REDIS_HOST,
