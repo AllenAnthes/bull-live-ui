@@ -48,7 +48,7 @@ const Table = ({ name: queueName }) => {
 
   useEffect(() => {
     if (isLiveUpdating) {
-      console.debug(`Subbing to ${queueName}`);
+      // console.debug(`Subbing to ${queueName}`);
       socket.emit('subQueue', { queueName }, (ackResponse) => {
         setCounts(ackResponse.counts);
       });
@@ -68,7 +68,7 @@ const Table = ({ name: queueName }) => {
   useEffect(() => {
     socket.removeAllListeners();
     socket.on('progress', (data) => {
-      console.debug(`progress`, data);
+      // console.debug(`progress`, data);
       tableRef.current && tableRef.current.onQueryChange();
       setCounts(data.counts);
     });
