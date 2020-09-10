@@ -35,10 +35,10 @@ const useWebsockets = ({ app, server }) => {
   const io = socketIo(server);
 
   io.on('connection', (socket) => {
-    console.debug('New client connected');
+    // console.debug('New client connected');
 
     socket.on('subQueue', async ({ queueName }, callback) => {
-      console.debug(`client subscribed to queue: ${queueName}`);
+      // console.debug(`client subscribed to queue: ${queueName}`);
       socket.join(queueName);
 
       // give the client the most recent counts as part of our ACK
@@ -47,7 +47,7 @@ const useWebsockets = ({ app, server }) => {
     });
 
     socket.on('unsubQueue', ({ queueName }) => {
-      console.debug(`client unsubscribed to queue: ${queueName}`);
+      // console.debug(`client unsubscribed to queue: ${queueName}`);
       socket.leave(queueName);
     });
   });
@@ -58,7 +58,7 @@ const useWebsockets = ({ app, server }) => {
     // notifying them that there is new data and giving them the current counts
     const throttledProgress = throttle(async () => {
       const counts = await queue.getJobCounts();
-      console.log(`progress ${queueName}`);
+      // console.log(`progress ${queueName}`);
       io.to(queueName).emit('progress', { counts });
     }, 1500);
 
