@@ -31,7 +31,9 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const socket = socketIOClient(process.env.REACT_APP_SOCKET_IO_URI);
+const socket = socketIOClient(process.env.REACT_APP_SOCKET_IO_URI, {
+  transports: ['websocket', 'polling'],
+});
 
 const Table = ({ name: queueName }) => {
   const classes = useStyles();

@@ -33,7 +33,9 @@ exports.useBullUIWebsockets = ({ app, server }) => {
   if (!server) {
     server = http.createServer(app);
   }
-  const io = socketIo(server);
+  const io = socketIo(server, {
+    transports: ['websocket', 'polling']
+  });
 
   io.on('connection', (socket) => {
     // console.debug('New client connected');
