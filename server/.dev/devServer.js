@@ -1,17 +1,15 @@
 require('dotenv').config();
-const http = require('http');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const debug = require('debug')('bull-ui:server');
 
 const Queue = require('bull');
 
-const { router, setQueues, useWebsockets } = require('../index');
+const { bullUI, setQueues, useBullUIWebsockets } = require('../index');
 
 const { REDIS_HOST = '127.0.0.1', REDIS_PORT = 6379, REDIS_DB = 0, PORT = '3000' } = process.env;
 
-let redis = {
+const redis = {
   host: REDIS_HOST,
   port: REDIS_PORT,
   db: REDIS_DB,
@@ -29,30 +27,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-app.use(router);
+app.use(bullUI);
 
-/**
- * Get port from environment and store in Express.
- */
 const port = normalizePort(PORT);
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
-const server = http.createServer(app);
-
-useWebsockets(server);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Listening on ${port}`);
 });
-server.on('error', onError);
-server.on('listening', onListening);
+app.on('error', onError);
+
+useBullUIWebsockets({ server });
 
 /**
  * Normalize a port into a number, string, or false.
@@ -86,23 +71,14 @@ function onError(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      console.error(`${bind} requires elevated privileges`);
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      console.error(`${bind} is already in use`);
       process.exit(1);
       break;
     default:
       throw error;
   }
-}
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-function onListening() {
-  const addr = server.address();
-  const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
-  debug(`Listening on ${bind}`);
 }

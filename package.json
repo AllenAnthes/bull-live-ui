@@ -1,6 +1,6 @@
 {
   "name": "@allenanthes/bull-live-ui",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "main": "server/index.js",
   "scripts": {

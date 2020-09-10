@@ -1,4 +1,5 @@
 const path = require('path');
+const http = require('http');
 
 const express = require('express');
 const socketIo = require('socket.io');
@@ -24,9 +25,13 @@ const setQueues = (bullQueues) => {
 /**
  * Must be called AFTER queues have been set via `setQueues`
  *
- * @param {Server} server The HTTP server that we're going to bind to
+ * @param app    Express app that an http server will be bound to
+ * @param server Optionally provided server
  */
-const useWebsockets = (server) => {
+const useWebsockets = ({ app, server }) => {
+  if (!server) {
+    server = http.createServer(app);
+  }
   const io = socketIo(server);
 
   io.on('connection', (socket) => {
@@ -59,6 +64,7 @@ const useWebsockets = (server) => {
 
     queue.on('global:progress', throttledProgress);
   });
+  return { server, app, io };
 };
 
-module.exports = { router, setQueues, useWebsockets };
+module.exports = { bullUI: router, setQueues, useBullUIWebsockets: useWebsockets };
