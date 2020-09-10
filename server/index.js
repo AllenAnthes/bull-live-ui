@@ -7,16 +7,17 @@ const throttle = require('lodash/throttle');
 
 const queuesRouter = require('./routes/queues');
 
-const router = express();
+const bullUI = express();
+exports.bullUI = bullUI;
 
-router.use(express.static(path.join(__dirname, 'public')));
+bullUI.use(express.static(path.join(__dirname, 'public')));
 
 const queues = {};
-router.locals.queues = queues;
+bullUI.locals.queues = queues;
 
-router.use('/queues', queuesRouter);
+bullUI.use('/queues', queuesRouter);
 
-const setQueues = (bullQueues) => {
+exports.setQueues = (bullQueues) => {
   bullQueues.forEach((queue) => {
     queues[queue.name] = queue;
   });
@@ -28,7 +29,7 @@ const setQueues = (bullQueues) => {
  * @param app    Express app that an http server will be bound to
  * @param server Optionally provided server
  */
-const useWebsockets = ({ app, server }) => {
+exports.useBullUIWebsockets = ({ app, server }) => {
   if (!server) {
     server = http.createServer(app);
   }
@@ -66,5 +67,3 @@ const useWebsockets = ({ app, server }) => {
   });
   return { server, app, io };
 };
-
-module.exports = { bullUI: router, setQueues, useBullUIWebsockets: useWebsockets };
