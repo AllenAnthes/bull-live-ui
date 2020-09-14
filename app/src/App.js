@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useQueryParams, StringParam, withDefault } from 'use-query-params';
 import Drawer from '@material-ui/core/Drawer';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import makeStyles from '@material-ui/core/styles/makeStyles';
-import useTheme from '@material-ui/core/styles/useTheme';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -61,6 +60,10 @@ const useStyles = makeStyles((theme) => ({
     ...theme.mixins.toolbar,
     justifyContent: 'flex-end',
   },
+  drawerHeaderTitle: {
+    textAlign: 'center',
+    width: '100%',
+  },
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
@@ -81,11 +84,14 @@ const useStyles = makeStyles((theme) => ({
 
 function App() {
   const classes = useStyles();
-  const theme = useTheme();
+
+  const [{ queue }, setParams] = useQueryParams({
+    queue: StringParam,
+    tab: withDefault(StringParam, 'latest'),
+  });
 
   const [open, setOpen] = React.useState(true);
   const [queues, setQueues] = useState([]);
-  const [queue, setQueue] = useState();
 
   useEffect(() => {
     fetch(`${window.location.origin}${window.location.pathname}queues/`)
@@ -93,9 +99,10 @@ function App() {
       .then((data) => {
         setQueues(data.queues || []);
         if (data.queues?.length) {
-          setQueue(data.queues[0]);
+          setParams({ queue: data.queues[0] });
         }
       });
+    // eslint-disable-next-line
   }, []);
 
   return (
@@ -117,8 +124,8 @@ function App() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-            Bull UI
+          <Typography variant="h5" noWrap>
+            Bull Live UI
           </Typography>
         </Toolbar>
       </AppBar>
@@ -132,14 +139,17 @@ function App() {
         }}
       >
         <div className={classes.drawerHeader}>
+          <Typography className={classes.drawerHeaderTitle} variant={'h6'}>
+            Queues
+          </Typography>
           <IconButton onClick={() => setOpen(false)}>
-            {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
         <List>
-          {queues.map((text, index) => (
-            <ListItem button key={text} onClick={() => setQueue(text)}>
+          {queues.map((text) => (
+            <ListItem button key={text} onClick={() => setParams({ queue: text })}>
               <ListItemIcon>
                 <ListIcon />
               </ListItemIcon>

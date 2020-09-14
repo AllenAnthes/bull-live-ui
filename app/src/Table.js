@@ -1,26 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { StringParam, useQueryParam } from 'use-query-params';
 import MaterialTable from 'material-table';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import StopIcon from '@material-ui/icons/Stop';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import socketIOClient from 'socket.io-client';
 
 import DetailPanel from './DetailPanel';
 import { getColumns } from './utils';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   progressBar: {
-    backgroundColor: 'green',
+    backgroundColor: theme.palette.success.main,
   },
   progressBarError: {
-    backgroundColor: '#f44336',
+    backgroundColor: theme.palette.error.main,
   },
   liveUpdateButton: {
-    color: 'green',
+    color: ({ isLiveUpdating }) =>
+      isLiveUpdating ? theme.palette.success.main : theme.palette.action.disabled,
   },
   title: {
     fontSize: 14,
@@ -36,19 +38,19 @@ const socket = socketIOClient(process.env.REACT_APP_SOCKET_IO_URI, {
 });
 
 const Table = ({ name: queueName }) => {
-  const classes = useStyles();
   const tableRef = useRef();
+  const isFirstRender = useRef(true);
+  const [tab, setTab] = useQueryParam('tab', StringParam);
   const [counts, setCounts] = useState({});
-  const [tab, setTab] = useState('latest');
+  const [tabToClear, setTabToClear] = useState(null);
   const [isLiveUpdating, setIsLiveUpdating] = useState(true);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const isFirstRender = useRef(true);
+  const classes = useStyles({ isLiveUpdating });
 
   const baseUrl = `${window.location.origin}${window.location.pathname}queues/${queueName}`;
 
   useEffect(() => {
     if (isLiveUpdating) {
-      // console.debug(`Subbing to ${queueName}`);
       socket.emit('subQueue', { queueName }, (ackResponse) => {
         setCounts(ackResponse.counts);
       });
@@ -59,8 +61,9 @@ const Table = ({ name: queueName }) => {
   }, [isLiveUpdating, queueName]);
 
   useEffect(() => {
-    if (!isFirstRender.current) {
-      tableRef.current && tableRef.current.onQueryChange();
+    // re-fetch when different queue is selected
+    if (!isFirstRender.current && tableRef.current) {
+      tableRef.current.onQueryChange();
     }
     isFirstRender.current = false;
   }, [queueName]);
@@ -68,7 +71,6 @@ const Table = ({ name: queueName }) => {
   useEffect(() => {
     socket.removeAllListeners();
     socket.on('progress', (data) => {
-      // console.debug(`progress`, data);
       tableRef.current && tableRef.current.onQueryChange();
       setCounts(data.counts);
     });
@@ -87,8 +89,13 @@ const Table = ({ name: queueName }) => {
     return fetch(url.toString())
       .then((res) => res.json())
       .then((res) => {
-        setCounts(res.counts);
-        return res.jobs;
+        const { jobs, counts: newCounts } = res ?? {};
+        const { totalCount, page, data } = jobs ?? {};
+
+        setCounts(newCounts);
+
+        const maxPages = Math.floor(jobs.totalCount / query.pageSize);
+        return { totalCount, page: Math.min(maxPages, page), data };
       });
   };
 
@@ -96,23 +103,15 @@ const Table = ({ name: queueName }) => {
     {
       isFreeAction: true,
       tooltip: `${isLiveUpdating ? 'Disable' : 'Enable'} Live Updates`,
-      icon: isLiveUpdating
-        ? () => <StopIcon color="error" />
-        : () => <PlayArrowIcon className={classes.liveUpdateButton} />,
+      icon: () => <PlayArrowIcon className={classes.liveUpdateButton} />,
       onClick: () => setIsLiveUpdating((prev) => !prev),
     },
     {
       isFreeAction: true,
-      tooltip: 'Clean jobs',
-      icon: 'delete_forever',
+      tooltip: `Delete all ${tab} jobs`,
+      icon: 'delete',
       iconProps: { color: 'error' },
-      onClick: () => {
-        // for some reason the type for deleting is 'wait' instead of 'waiting' like everywhere else
-        const type = tab === 'waiting' ? 'wait' : tab;
-        fetch(`${baseUrl}/jobs?type=${type}`, { method: 'DELETE' }).then(
-          tableRef.current.onQueryChange
-        );
-      },
+      onClick: () => setTabToClear(tab),
       hidden: tab === 'latest',
     },
     {
@@ -137,6 +136,7 @@ const Table = ({ name: queueName }) => {
   ];
 
   const tableOptions = {
+    initialPage: 0,
     loadingType: 'linear',
     pageSize: rowsPerPage,
     pageSizeOptions: [5, 10, 20, 50, 100],
@@ -149,7 +149,7 @@ const Table = ({ name: queueName }) => {
   return (
     <Paper square className={classes.container}>
       <Tabs
-        value={tab}
+        value={tab || 'latest'}
         onChange={(event, newTab) => {
           setTab(newTab);
           tableRef.current && tableRef.current.onQueryChange();
@@ -184,6 +184,15 @@ const Table = ({ name: queueName }) => {
         columns={columns}
         detailPanel={(rowData) => <DetailPanel rowData={rowData} />}
       />
+
+      {tabToClear && (
+        <DeleteConfirmationDialog
+          onClose={() => setTabToClear(null)}
+          tab={tabToClear}
+          tableRef={tableRef}
+          baseUrl={baseUrl}
+        />
+      )}
     </Paper>
   );
 };

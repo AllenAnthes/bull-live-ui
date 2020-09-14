@@ -74,7 +74,11 @@ router.delete('/:queueId/jobs', async (req, res) => {
   const { queue } = res.locals;
   const { type } = req.query;
 
-  await queue.clean(5000, type);
+  // for some reason 'wait' is used instead of 'waiting' for cleaning
+  // see https://github.com/OptimalBits/bull/issues/1069
+  const parsedType = type === 'waiting' ? 'wait' : type;
+
+  await queue.clean(5000, parsedType);
   return res.status(204).send();
 });
 

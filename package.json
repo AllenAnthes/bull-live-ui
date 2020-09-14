@@ -1,13 +1,16 @@
 {
   "name": "@allenanthes/bull-live-ui",
-  "version": "0.1.5",
+  "version": "0.2.1",
   "private": false,
   "license": "MIT",
   "repository": "github:AllenAnthes/bull-live-ui",
   "main": "server/index.js",
   "scripts": {
-    "prepublishOnly": "cp -r ./app/build/* ./server/public",
-    "dev": "DEBUG=true nodemon ./server/.dev/devServer.js"
+    "build": "npm run build:app",
+    "build:app": "cd app && npm run build",
+    "dev": "concurrently -n w: \"npm run dev:*\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:app": "cd app && npm run start"
   },
   "dependencies": {
     "bull": "^3.13.0",
@@ -20,6 +23,8 @@
     "socket.io": "^2.3.0"
   },
   "devDependencies": {
+    "concurrently": "^5.3.0",
+    "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "nodemon": "^2.0.3",
     "prettier": "^2.0.5"

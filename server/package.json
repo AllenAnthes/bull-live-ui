@@ -1,0 +1,25 @@
+{
+  "name": "bull-live-ui-server",
+  "private": true,
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env DEBUG=true nodemon .dev/devServer.js"
+  },
+  "dependencies": {
+    "bull": "^3.13.0",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "lodash": "^4.17.15",
+    "morgan": "~1.9.1",
+    "redis-info": "^3.0.7",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.2",
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.3",
+    "prettier": "^2.0.5"
+  }
+}

@@ -5,7 +5,7 @@ import JsonDetailCard from './JsonDetailCard';
 
 const DetailPanel = ({ rowData }) => (
   <Grid container spacing={2} justify="space-evenly" style={{ padding: '1rem' }}>
-    {rowData.stacktrace && rowData.stacktrace.length > 0 && (
+    {rowData.stacktrace?.length > 0 && (
       <Grid item xs={12}>
         <JsonDetailCard data={rowData.stacktrace} title="Stacktrace:" />
       </Grid>
